@@ -29,7 +29,7 @@
   color: var(--color-primary);
 }
 .secondary:hover:not(:disabled) {
-  background: #dde4ff;
+  background: #fecaca;
 }
 
 .danger {
