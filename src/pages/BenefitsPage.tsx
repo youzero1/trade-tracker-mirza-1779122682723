@@ -1,114 +1,153 @@
 import { useState } from 'react';
-import { Heart, Calendar, Laptop, Book, Activity, Users, Award, Shield } from 'lucide-react';
-import { BENEFITS } from '@/lib/data';
-import type { Benefit } from '@/types';
 import PageHeader from '@/components/ui/PageHeader';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
-import styles from './BenefitsPage.module.css';
+import { Gift, Heart, Bike, Coffee, BookOpen, Shield } from 'lucide-react';
 
-function BenefitIcon({ icon }: { icon: string }) {
-  const props = { size: 24 };
-  switch (icon) {
-    case 'heart': return <Heart {...props} />;
-    case 'calendar': return <Calendar {...props} />;
-    case 'laptop': return <Laptop {...props} />;
-    case 'book': return <Book {...props} />;
-    case 'activity': return <Activity {...props} />;
-    case 'users': return <Users {...props} />;
-    case 'award': return <Award {...props} />;
-    case 'shield': return <Shield {...props} />;
-    default: return <Heart {...props} />;
-  }
-}
+type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'default';
 
-const CATEGORY_COLORS: Record<string, 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
-  'Health & Wellness': 'success',
-  'Time Off': 'info',
-  'Work Flexibility': 'primary',
-  'Growth': 'warning',
-  'Family': 'danger',
-  'Compensation': 'primary',
+type Benefit = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  icon: React.ReactNode;
+  enrolled: boolean;
 };
 
+const CATEGORY_COLORS: Record<string, BadgeVariant> = {
+  Health: 'success',
+  Wellness: 'info',
+  Food: 'warning',
+  Education: 'default',
+  Insurance: 'danger',
+};
+
+const INITIAL_BENEFITS: Benefit[] = [
+  {
+    id: '1',
+    title: 'Health Insurance',
+    description: 'Comprehensive health coverage for you and your family including dental and vision.',
+    category: 'Health',
+    icon: <Heart size={24} />,
+    enrolled: true,
+  },
+  {
+    id: '2',
+    title: 'Gym Membership',
+    description: 'Access to premium gym facilities and wellness programs.',
+    category: 'Wellness',
+    icon: <Bike size={24} />,
+    enrolled: false,
+  },
+  {
+    id: '3',
+    title: 'Meal Allowance',
+    description: 'Monthly meal allowance for office lunches and team events.',
+    category: 'Food',
+    icon: <Coffee size={24} />,
+    enrolled: true,
+  },
+  {
+    id: '4',
+    title: 'Learning & Development',
+    description: 'Annual budget for courses, books, and professional development.',
+    category: 'Education',
+    icon: <BookOpen size={24} />,
+    enrolled: false,
+  },
+  {
+    id: '5',
+    title: 'Life Insurance',
+    description: 'Life insurance policy to secure your family\'s future.',
+    category: 'Insurance',
+    icon: <Shield size={24} />,
+    enrolled: true,
+  },
+  {
+    id: '6',
+    title: 'Employee Assistance',
+    description: 'Confidential counseling and mental health support services.',
+    category: 'Health',
+    icon: <Gift size={24} />,
+    enrolled: false,
+  },
+];
+
 export default function BenefitsPage() {
+  const [benefits, setBenefits] = useState<Benefit[]>(INITIAL_BENEFITS);
   const [selected, setSelected] = useState<Benefit | null>(null);
-  const [filterCat, setFilterCat] = useState('');
 
-  const categories = Array.from(new Set(BENEFITS.map(b => b.category)));
-
-  const filtered = filterCat ? BENEFITS.filter(b => b.category === filterCat) : BENEFITS;
+  const toggle = (id: string) => {
+    setBenefits(prev =>
+      prev.map(b => b.id === id ? { ...b, enrolled: !b.enrolled } : b)
+    );
+    if (selected?.id === id) {
+      setSelected(prev => prev ? { ...prev, enrolled: !prev.enrolled } : null);
+    }
+  };
 
   return (
     <div>
       <PageHeader
-        title="Benefits Catalog"
-        subtitle="Browse all available employee benefits and perks."
+        title="Benefits"
+        subtitle="Manage your employee benefits and enrollments"
       />
 
-      <div className={styles.filterRow}>
-        <button
-          className={[styles.catBtn, !filterCat ? styles.catBtnActive : ''].join(' ')}
-          onClick={() => setFilterCat('')}
-        >
-          All
-        </button>
-        {categories.map(cat => (
-          <button
-            key={cat}
-            className={[styles.catBtn, filterCat === cat ? styles.catBtnActive : ''].join(' ')}
-            onClick={() => setFilterCat(cat)}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      <div className={styles.grid}>
-        {filtered.map(benefit => (
-          <Card
-            key={benefit.id}
-            className={styles.benefitCard}
-          >
-            <div
-              className={[styles.iconWrap, styles[`icon_${benefit.icon}`]].join(' ')}
-            >
-              <BenefitIcon icon={benefit.icon} />
-            </div>
-            <div className={styles.benefitMeta}>
-              <Badge variant={CATEGORY_COLORS[benefit.category] || 'default'}>
-                {benefit.category}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        {benefits.map(benefit => (
+          <Card key={benefit.id}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ color: 'var(--color-primary)', background: 'var(--color-primary-bg)', borderRadius: 'var(--radius-lg)', padding: '0.5rem', display: 'flex' }}>
+                  {benefit.icon}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, color: 'var(--color-text-primary)', fontSize: 'var(--text-base)' }}>{benefit.title}</div>
+                  <Badge variant={CATEGORY_COLORS[benefit.category] || 'default'}>
+                    {benefit.category}
+                  </Badge>
+                </div>
+              </div>
+              <Badge variant={benefit.enrolled ? 'success' : 'default'}>
+                {benefit.enrolled ? 'Enrolled' : 'Not Enrolled'}
               </Badge>
             </div>
-            <h3 className={styles.benefitTitle}>{benefit.title}</h3>
-            <p className={styles.benefitDesc}>{benefit.description.substring(0, 100)}…</p>
-            <button className={styles.learnMore} onClick={() => setSelected(benefit)}>
-              Learn more →
-            </button>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: '1rem', lineHeight: 1.6 }}>
+              {benefit.description}
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <Button variant="ghost" size="sm" onClick={() => setSelected(benefit)}>View Details</Button>
+              <Button variant={benefit.enrolled ? 'danger' : 'primary'} size="sm" onClick={() => toggle(benefit.id)}>
+                {benefit.enrolled ? 'Unenroll' : 'Enroll'}
+              </Button>
+            </div>
           </Card>
         ))}
       </div>
 
       {selected && (
-        <Modal
-          isOpen={!!selected}
-          onClose={() => setSelected(null)}
-          title={selected.title}
-          size="sm"
-        >
-          <div className={styles.detailModal}>
-            <div className={[styles.iconWrapLg, styles[`icon_${selected.icon}`]].join(' ')}>
-              <BenefitIcon icon={selected.icon} />
+        <Modal isOpen={!!selected} onClose={() => setSelected(null)} title={selected.title}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Badge variant={CATEGORY_COLORS[selected.category] || 'default'}>
+                {selected.category}
+              </Badge>
+              <Badge variant={selected.enrolled ? 'success' : 'default'}>
+                {selected.enrolled ? 'Enrolled' : 'Not Enrolled'}
+              </Badge>
             </div>
-            <Badge variant={CATEGORY_COLORS[selected.category] || 'default'}>
-              {selected.category}
-            </Badge>
-            <p className={styles.detailDesc}>{selected.description}</p>
-            <div className={styles.eligibilityBox}>
-              <div className={styles.eligibilityLabel}>Eligibility</div>
-              <div className={styles.eligibilityText}>{selected.eligibility}</div>
-            </div>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.7 }}>
+              {selected.description}
+            </p>
+            <Button
+              variant={selected.enrolled ? 'danger' : 'primary'}
+              onClick={() => toggle(selected.id)}
+            >
+              {selected.enrolled ? 'Unenroll from this benefit' : 'Enroll in this benefit'}
+            </Button>
           </div>
         </Modal>
       )}
