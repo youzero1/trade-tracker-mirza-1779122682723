@@ -7,6 +7,7 @@ import {
   Gift,
   BarChart3,
   Building2,
+  Mail,
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
@@ -23,6 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Room Bookings', path: '/bookings', icon: <BookOpen size={20} /> },
   { label: 'Benefits', path: '/benefits', icon: <Gift size={20} /> },
   { label: 'Reports', path: '/reports', icon: <BarChart3 size={20} /> },
+  { label: 'Contact Us', path: '/contact', icon: <Mail size={20} /> },
 ];
 
 export default function Sidebar() {

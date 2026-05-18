@@ -6,6 +6,7 @@ import LeavePage from '@/pages/LeavePage';
 import BookingsPage from '@/pages/BookingsPage';
 import BenefitsPage from '@/pages/BenefitsPage';
 import ReportsPage from '@/pages/ReportsPage';
+import ContactPage from '@/pages/ContactPage';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="bookings" element={<BookingsPage />} />
           <Route path="benefits" element={<BenefitsPage />} />
           <Route path="reports" element={<ReportsPage />} />
+          <Route path="contact" element={<ContactPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
