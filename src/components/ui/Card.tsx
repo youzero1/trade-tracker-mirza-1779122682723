@@ -1,0 +1,15 @@
+import styles from './Card.module.css';
+import { cn } from '@/lib/utils';
+
+type CardProps = {
+  children: React.ReactNode;
+  className?: string;
+};
+
+export default function Card({ children, className }: CardProps) {
+  return (
+    <div className={cn(styles.card, className)}>
+      {children}
+    </div>
+  );
+}

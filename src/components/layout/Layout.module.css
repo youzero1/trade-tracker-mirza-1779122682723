@@ -1,0 +1,17 @@
+.root {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--color-bg);
+}
+
+.content {
+  padding: var(--space-8);
+  max-width: 1400px;
+  margin: 0 auto;
+}
