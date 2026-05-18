@@ -1,31 +1,34 @@
-import PageHeader from '@/components/ui/PageHeader';
-import Card from '@/components/ui/Card';
-import { BarChart3, TrendingUp, Users, CalendarDays } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useLeaveRequests } from '@/hooks/useLeaveRequests';
 import { useBookings } from '@/hooks/useBookings';
+import PageHeader from '@/components/ui/PageHeader';
+import Card from '@/components/ui/Card';
+import StatCard from '@/components/ui/StatCard';
+import Badge from '@/components/ui/Badge';
+import { Users, CalendarDays, BookOpen, TrendingUp } from 'lucide-react';
+import styles from './ReportsPage.module.css';
 
 export default function ReportsPage() {
   const { employees } = useEmployees();
-  const { requests } = useLeaveRequests();
+  const { leaveRequests } = useLeaveRequests();
   const { bookings } = useBookings();
 
-  const totalEmployees = employees.length;
   const activeEmployees = employees.filter(e => e.status === 'active').length;
-  const pendingLeave = requests.filter(r => r.status === 'pending').length;
-  const approvedLeave = requests.filter(r => r.status === 'approved').length;
-  const totalBookings = bookings.length;
-  const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
+  const pendingLeave = leaveRequests.filter(r => r.status === 'pending').length;
+  const approvedLeave = leaveRequests.filter(r => r.status === 'approved').length;
+  const confirmedBookings = bookings.length;
 
   const deptMap: Record<string, number> = {};
   employees.forEach(e => {
     deptMap[e.department] = (deptMap[e.department] || 0) + 1;
   });
+  const departments = Object.entries(deptMap).map(([name, count]) => ({ name, count }));
 
-  const leaveTypeMap: Record<string, number> = {};
-  requests.forEach(r => {
-    leaveTypeMap[r.type] = (leaveTypeMap[r.type] || 0) + 1;
+  const leaveByType: Record<string, number> = {};
+  leaveRequests.forEach(r => {
+    leaveByType[r.type] = (leaveByType[r.type] || 0) + 1;
   });
+  const leaveTypes = Object.entries(leaveByType).map(([type, count]) => ({ type, count }));
 
   return (
     <div>
@@ -34,126 +37,121 @@ export default function ReportsPage() {
         subtitle="Overview of HR metrics and analytics"
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div className={styles.statsGrid}>
+        <StatCard
+          label="Total Employees"
+          value={employees.length}
+          icon={<Users size={24} />}
+          color="primary"
+          sub={`${activeEmployees} active`}
+        />
+        <StatCard
+          label="Leave Requests"
+          value={leaveRequests.length}
+          icon={<CalendarDays size={24} />}
+          color="warning"
+          sub={`${pendingLeave} pending`}
+        />
+        <StatCard
+          label="Room Bookings"
+          value={confirmedBookings}
+          icon={<BookOpen size={24} />}
+          color="success"
+        />
+        <StatCard
+          label="Approved Leave"
+          value={approvedLeave}
+          icon={<TrendingUp size={24} />}
+          color="danger"
+        />
+      </div>
+
+      <div className={styles.grid}>
         <Card>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{ background: 'var(--color-primary-bg)', color: 'var(--color-primary)', borderRadius: 'var(--radius-lg)', padding: '0.75rem', display: 'flex' }}>
-              <Users size={24} />
-            </div>
-            <div style={{ fontWeight: 700, fontSize: 'var(--text-lg)', color: 'var(--color-text-primary)' }}>Employee Summary</div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Total Employees</span>
-              <span style={{ fontWeight: 600 }}>{totalEmployees}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Active</span>
-              <span style={{ fontWeight: 600, color: 'var(--color-success)' }}>{activeEmployees}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Inactive</span>
-              <span style={{ fontWeight: 600, color: 'var(--color-text-muted)' }}>{totalEmployees - activeEmployees}</span>
-            </div>
+          <h2 className={styles.sectionTitle}>Employees by Department</h2>
+          <div className={styles.list}>
+            {departments.length === 0 && (
+              <p className={styles.empty}>No department data available.</p>
+            )}
+            {departments.map(d => (
+              <div key={d.name} className={styles.listRow}>
+                <span className={styles.listLabel}>{d.name}</span>
+                <div className={styles.listRight}>
+                  <div
+                    className={styles.bar}
+                    style={{ width: `${Math.min(100, (d.count / employees.length) * 100)}%` }}
+                  />
+                  <span className={styles.listCount}>{d.count}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </Card>
 
         <Card>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{ background: 'var(--color-warning-light)', color: 'var(--color-warning)', borderRadius: 'var(--radius-lg)', padding: '0.75rem', display: 'flex' }}>
-              <CalendarDays size={24} />
-            </div>
-            <div style={{ fontWeight: 700, fontSize: 'var(--text-lg)', color: 'var(--color-text-primary)' }}>Leave Summary</div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Total Requests</span>
-              <span style={{ fontWeight: 600 }}>{requests.length}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Pending</span>
-              <span style={{ fontWeight: 600, color: 'var(--color-warning)' }}>{pendingLeave}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Approved</span>
-              <span style={{ fontWeight: 600, color: 'var(--color-success)' }}>{approvedLeave}</span>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{ background: 'var(--color-success-light)', color: 'var(--color-success)', borderRadius: 'var(--radius-lg)', padding: '0.75rem', display: 'flex' }}>
-              <TrendingUp size={24} />
-            </div>
-            <div style={{ fontWeight: 700, fontSize: 'var(--text-lg)', color: 'var(--color-text-primary)' }}>Bookings Summary</div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Total Bookings</span>
-              <span style={{ fontWeight: 600 }}>{totalBookings}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Confirmed</span>
-              <span style={{ fontWeight: 600, color: 'var(--color-success)' }}>{confirmedBookings}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Pending</span>
-              <span style={{ fontWeight: 600, color: 'var(--color-warning)' }}>{totalBookings - confirmedBookings}</span>
-            </div>
+          <h2 className={styles.sectionTitle}>Leave Requests by Type</h2>
+          <div className={styles.list}>
+            {leaveTypes.length === 0 && (
+              <p className={styles.empty}>No leave request data available.</p>
+            )}
+            {leaveTypes.map(l => (
+              <div key={l.type} className={styles.listRow}>
+                <span className={styles.listLabel}>{l.type}</span>
+                <div className={styles.listRight}>
+                  <div
+                    className={styles.bar}
+                    style={{ width: `${Math.min(100, (l.count / leaveRequests.length) * 100)}%` }}
+                  />
+                  <span className={styles.listCount}>{l.count}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </Card>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.5rem' }}>
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-            <BarChart3 size={20} style={{ color: 'var(--color-primary)' }} />
-            <div style={{ fontWeight: 700, fontSize: 'var(--text-base)', color: 'var(--color-text-primary)' }}>Employees by Department</div>
-          </div>
-          {Object.entries(deptMap).length === 0 ? (
-            <div style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>No data available</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {Object.entries(deptMap).sort((a, b) => b[1] - a[1]).map(([dept, count]) => (
-                <div key={dept}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)', marginBottom: '0.25rem' }}>
-                    <span style={{ color: 'var(--color-text-secondary)' }}>{dept}</span>
-                    <span style={{ fontWeight: 600 }}>{count}</span>
-                  </div>
-                  <div style={{ height: '6px', background: 'var(--color-border-light)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', background: 'var(--color-primary)', borderRadius: 'var(--radius-full)', width: `${Math.round((count / totalEmployees) * 100)}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-            <BarChart3 size={20} style={{ color: 'var(--color-warning)' }} />
-            <div style={{ fontWeight: 700, fontSize: 'var(--text-base)', color: 'var(--color-text-primary)' }}>Leave by Type</div>
-          </div>
-          {Object.entries(leaveTypeMap).length === 0 ? (
-            <div style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>No data available</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {Object.entries(leaveTypeMap).sort((a, b) => b[1] - a[1]).map(([type, count]) => (
-                <div key={type}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)', marginBottom: '0.25rem' }}>
-                    <span style={{ color: 'var(--color-text-secondary)', textTransform: 'capitalize' }}>{type}</span>
-                    <span style={{ fontWeight: 600 }}>{count}</span>
-                  </div>
-                  <div style={{ height: '6px', background: 'var(--color-border-light)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', background: 'var(--color-warning)', borderRadius: 'var(--radius-full)', width: `${Math.round((count / requests.length) * 100)}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      </div>
+      <Card className={styles.recentCard}>
+        <h2 className={styles.sectionTitle}>Recent Leave Requests</h2>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Type</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leaveRequests.slice(0, 10).map(r => (
+              <tr key={r.id}>
+                <td>{r.employeeName}</td>
+                <td>{r.type}</td>
+                <td>{r.startDate}</td>
+                <td>{r.endDate}</td>
+                <td>
+                  <Badge
+                    variant={
+                      r.status === 'approved'
+                        ? 'success'
+                        : r.status === 'rejected'
+                        ? 'danger'
+                        : 'warning'
+                    }
+                  >
+                    {r.status}
+                  </Badge>
+                </td>
+              </tr>
+            ))}
+            {leaveRequests.length === 0 && (
+              <tr>
+                <td colSpan={5} className={styles.empty}>No leave requests found.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </Card>
     </div>
   );
 }
